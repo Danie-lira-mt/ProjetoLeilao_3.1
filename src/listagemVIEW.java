@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -26,7 +27,7 @@ public class listagemVIEW extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) listaProdutos.getModel();
         model.setNumRows(0);
 
-        ArrayList<ProdutosDTO> listagem = dao.listarProdutos();
+        ArrayList<ProdutosDTO> listagem = dao.listarTodos();
 
         for (ProdutosDTO produto : listagem) {
             model.addRow(new Object[]{
@@ -64,18 +65,15 @@ public class listagemVIEW extends javax.swing.JFrame {
         btnVoltar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        listaProdutos.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "ID", "Nome", "Valor", "Status"
+        addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                formWindowGainedFocus(evt);
             }
-        ));
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
+            }
+        });
+
+        listaProdutos.setModel(montarTabela());
         jScrollPane1.setViewportView(listaProdutos);
 
         jLabel1.setFont(new java.awt.Font("Lucida Fax", 0, 18)); // NOI18N
@@ -158,12 +156,31 @@ public class listagemVIEW extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnVenderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVenderActionPerformed
-        String id = id_produto_venda.getText();
-        
-        ProdutosDAO produtosdao = new ProdutosDAO();
-        
-        //produtosdao.venderProduto(Integer.parseInt(id));
-        listarProdutos();
+                                                  
+    ProdutosDAO dao = new ProdutosDAO();
+
+    boolean status = dao.conectar();
+    if (!status) {
+        JOptionPane.showMessageDialog(null, "Erro ao conectar ao banco");
+        return;
+    }
+
+    try {
+        int idProduto = Integer.parseInt(id_produto_venda.getText());
+        int resultado = dao.atualizarStatusPorId(idProduto, "Vendido");
+
+        if (resultado == 1) {
+            JOptionPane.showMessageDialog(null, "Status atualizado para 'Vendido'.");
+            id_produto_venda.setText("");
+        } else if (resultado == 0) {
+            JOptionPane.showMessageDialog(null, "Produto com esse ID não encontrado.");
+        } else {
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar status.");
+        }
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "ID inválido.");
+    }
+
     }//GEN-LAST:event_btnVenderActionPerformed
 
     private void btnVendasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVendasActionPerformed
@@ -174,6 +191,12 @@ public class listagemVIEW extends javax.swing.JFrame {
     private void btnVoltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoltarActionPerformed
         this.dispose();
     }//GEN-LAST:event_btnVoltarActionPerformed
+
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+       
+          listaProdutos.setModel(montarTabela());
+        jScrollPane1.setViewportView(listaProdutos);
+    }//GEN-LAST:event_formWindowGainedFocus
 
     /**
      * @param args the command line arguments
@@ -208,6 +231,28 @@ public class listagemVIEW extends javax.swing.JFrame {
                 new listagemVIEW().setVisible(true);
             }
         });
+    }
+     private DefaultTableModel montarTabela(){
+         ProdutosDAO dao = new ProdutosDAO();
+        String[] colunas = {"ID", "Nome do Produto", "Valor", "Status"};
+        
+        //Criamos a tabela
+        DefaultTableModel tabela = new DefaultTableModel(colunas,0);
+        
+       List<ProdutosDTO> lista = dao.listarTodos();
+
+        for (int i = 0; i < lista.size(); i++) {
+            ProdutosDTO produto = lista.get(i);
+            
+            String[] linha = {
+                Integer.toString(produto.getId()),
+                produto.getNome(),
+                Integer.toString(produto.getValor()),
+                produto.getStatus()
+            };
+            tabela.addRow(linha);
+        }
+        return tabela;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
