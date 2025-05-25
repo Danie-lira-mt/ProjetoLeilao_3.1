@@ -53,7 +53,7 @@ public class ProdutosDAO {
         }
     }
 
-    public ArrayList<ProdutosDTO> listarProdutos() {
+    public ArrayList<ProdutosDTO> listarTodos() {
         ArrayList<ProdutosDTO> listagem = new ArrayList<>();
 
         try {
@@ -86,6 +86,39 @@ public class ProdutosDAO {
         return listagem;
     }
 
+    
+     public ProdutosDTO buscarPorId(int id) {
+        try {
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM produtos WHERE id = ?");
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                ProdutosDTO produto = new ProdutosDTO();
+                produto.setId(rs.getInt("id"));
+                produto.setNome(rs.getString("nome"));
+                produto.setValor(rs.getInt("valor"));
+                produto.setStatus(rs.getString("status"));
+                return produto;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public int atualizarStatusPorId(int id, String novoStatus) {
+        String sql = "UPDATE produtos SET status = ? WHERE id = ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, novoStatus);
+            st.setInt(2, id);
+
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
    
 
 }
