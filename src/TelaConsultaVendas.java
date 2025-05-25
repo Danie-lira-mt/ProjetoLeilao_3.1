@@ -48,14 +48,7 @@ public class TelaConsultaVendas extends javax.swing.JFrame {
             }
         });
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-
-            }
-        ));
+        jTable1.setModel(montarTabelaVendidos());
         jScrollPane1.setViewportView(jTable1);
 
         jLabel1.setFont(new java.awt.Font("Lucida Fax", 0, 18)); // NOI18N
@@ -101,7 +94,9 @@ public class TelaConsultaVendas extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
-       
+        jTable1.setModel(montarTabelaVendidos());
+        jScrollPane1.setViewportView(jTable1);
+
        
     }//GEN-LAST:event_formWindowGainedFocus
 
@@ -144,6 +139,29 @@ public class TelaConsultaVendas extends javax.swing.JFrame {
         });
     }
     
+    private DefaultTableModel montarTabelaVendidos(){
+         ProdutosDAO dao = new ProdutosDAO();
+        String[] colunas = {"ID", "Nome do Produto", "Valor", "Status"};
+        
+        //Criamos a tabela
+        DefaultTableModel tabela = new DefaultTableModel(colunas,0);
+        
+       List<ProdutosDTO> lista = dao.listarProdutosVendidos();
+
+        for (int i = 0; i < lista.size(); i++) {
+            ProdutosDTO produto = lista.get(i);
+            
+            String[] linha = {
+                Integer.toString(produto.getId()),
+                produto.getNome(),
+                Integer.toString(produto.getValor()),
+                produto.getStatus()
+            };
+            tabela.addRow(linha);
+        }
+        return tabela;
+    }
+
 
 
 
