@@ -1,3 +1,6 @@
+
+import javax.swing.JOptionPane;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -140,17 +143,47 @@ public class cadastroVIEW extends javax.swing.JFrame {
     }//GEN-LAST:event_cadastroNomeActionPerformed
 
     private void btnCadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCadastrarActionPerformed
-        ProdutosDTO produto = new ProdutosDTO();
-        String nome = cadastroNome.getText();
-        String valor = cadastroValor.getText();
-        String status = "A Venda";
-        produto.setNome(nome);
-        produto.setValor(Integer.parseInt(valor));
-        produto.setStatus(status);
-        
-        ProdutosDAO produtodao = new ProdutosDAO();
-        produtodao.cadastrarProduto(produto);
-        
+                                                 
+    ProdutosDTO produto = new ProdutosDTO();
+    ProdutosDAO dao = new ProdutosDAO();
+
+    boolean status = dao.conectar();
+    if (!status) {
+        JOptionPane.showMessageDialog(null, "Erro ao conectar ao banco");
+        return;
+    }
+
+    if (cadastroNome.getText().isBlank()) {
+        JOptionPane.showMessageDialog(null, "Por favor preencha o nome do produto.");
+        return;
+    }
+
+    if (cadastroValor.getText().isBlank()) {
+        JOptionPane.showMessageDialog(null, "Por favor preencha o valor do produto.");
+        return;
+    }
+
+    try {
+        produto.setId(0); // Ou gere o ID no banco com AUTO_INCREMENT
+        produto.setNome(cadastroNome.getText());
+        produto.setValor(Integer.parseInt(cadastroValor.getText()));
+        produto.setStatus("A venda");
+
+        int resposta = dao.salvar(produto);
+        if (resposta == 1) {
+            JOptionPane.showMessageDialog(null, "Produto cadastrado com sucesso.");
+            cadastroNome.setText("");
+            cadastroValor.setText("");
+            cadastroNome.requestFocus();
+        } else if (resposta == 1062) {
+            JOptionPane.showMessageDialog(null, "Produto já cadastrado.");
+        } else {
+            JOptionPane.showMessageDialog(null, "Erro ao cadastrar produto.");
+        }
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "Valor deve ser um número.");
+    }
+
     }//GEN-LAST:event_btnCadastrarActionPerformed
 
     private void btnProdutosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProdutosActionPerformed

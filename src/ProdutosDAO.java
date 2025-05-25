@@ -12,31 +12,81 @@ import java.sql.PreparedStatement;
 import java.sql.Connection;
 import javax.swing.JOptionPane;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ProdutosDAO {
-    
-    Connection conn;
-    PreparedStatement prep;
-    ResultSet resultset;
-    ArrayList<ProdutosDTO> listagem = new ArrayList<>();
-    
-    public void cadastrarProduto (ProdutosDTO produto){
-        
-        
-        //conn = new conectaDAO().connectDB();
-        
-        
+
+    private Connection conn;
+
+    public boolean conectar() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+         conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/uc11?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC","root","12345aA."
+
+);
+
+            return true;
+        } catch (ClassNotFoundException | SQLException e) {
+            System.out.println("Erro ao conectar: " + e.getMessage());
+            return false;
+        }
     }
-    
-    public ArrayList<ProdutosDTO> listarProdutos(){
-        
+
+    public int salvar(ProdutosDTO produto) {
+        String sql = "INSERT INTO produtos (id, nome, valor, status) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, produto.getId());
+            st.setString(2, produto.getNome());
+            st.setInt(3, produto.getValor());
+            st.setString(4, produto.getStatus());
+
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Erro ao salvar produto: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    public ArrayList<ProdutosDTO> listarProdutos() {
+        ArrayList<ProdutosDTO> listagem = new ArrayList<>();
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/uc11?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC","root","12345aA."
+);
+
+            String sql = "SELECT * FROM produtos";
+            PreparedStatement st = conn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                ProdutosDTO produto = new ProdutosDTO();
+                produto.setId(rs.getInt("id"));
+                produto.setNome(rs.getString("nome"));
+                produto.setValor(rs.getInt("valor"));
+                produto.setStatus(rs.getString("status"));
+
+                listagem.add(produto);
+            }
+
+            rs.close();
+            st.close();
+            conn.close();
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+
         return listagem;
     }
-    
-    
-    
-        
+
+   
+
 }
 
